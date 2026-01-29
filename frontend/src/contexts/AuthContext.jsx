@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post(
         API_ENDPOINTS.LOGIN,
         { email, password },
-        { withCredentials: true } // ✅ send credentials like cookies
+        { withCredentials: true },
       );
 
       const user = response.data.user;
@@ -59,13 +59,23 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Login error:", error);
-      return { success: false, error: error.response.data.message };
+
+      if (!error.response) {
+        return {
+          success: false,
+          error: "Server is down. Please try again later.",
+        };
+      }
+
+      return {
+        success: false,
+        error: error.response.data?.message || "Login failed",
+      };
     }
   };
 
   const register = async (userData) => {
     try {
-      // TODO: Replace with actual API call
       const response = await api.post(API_ENDPOINTS.GUEST_REGISTER, userData);
       navigate("/login");
 
@@ -83,7 +93,7 @@ export const AuthProvider = ({ children }) => {
         {},
         {
           withCredentials: true,
-        }
+        },
       );
     } catch (error) {}
     localStorage.removeItem("user");
